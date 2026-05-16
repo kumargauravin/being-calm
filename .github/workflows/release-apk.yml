@@ -1,9 +1,17 @@
 name: Release Android APK
 
 on:
+  # Automatically build when a version tag is pushed (e.g. git tag v1.2.3 && git push --tags)
   push:
     tags:
       - 'v*'
+  # Manually trigger from GitHub UI: Actions → Release Android APK → Run workflow
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
 
 permissions:
   contents: write
@@ -15,6 +23,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history is needed so we can push a new tag
+          fetch-depth: 0
+
+      - name: Create and push tag (manual dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          # Validate semver with 'v' prefix (e.g. v1.2.3)
+          if ! echo "$VERSION" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version '$VERSION' is not valid. Use the format v<major>.<minor>.<patch> (e.g. v1.0.0)."
+            exit 1
+          fi
+          # Abort if the tag already exists
+          if git ls-remote --tags origin "refs/tags/$VERSION" | grep -q "$VERSION"; then
+            echo "::error::Tag '$VERSION' already exists. Choose a different version."
+            exit 1
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$VERSION"
+          git push origin "$VERSION"
+
+      - name: Resolve tag name
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -37,10 +76,16 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
 
+      - name: Rename APK with version
+        run: |
+          mv android/app/build/outputs/apk/release/app-release.apk \
+             android/app/build/outputs/apk/release/being-calm-${{ steps.tag.outputs.name }}.apk
+
       - name: Publish APK to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: android/app/build/outputs/apk/release/app-release.apk
+          tag_name: ${{ steps.tag.outputs.name }}
+          files: android/app/build/outputs/apk/release/being-calm-${{ steps.tag.outputs.name }}.apk
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
