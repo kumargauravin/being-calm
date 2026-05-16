@@ -10,6 +10,10 @@ const SHAPE_TO_WAVEFORM: Record<ParsedSvgElement['shape'], WaveformType> = {
   path: 'sine',
 };
 
+const RED_WEIGHT = 0.2;
+const GREEN_WEIGHT = 0.5;
+const BLUE_WEIGHT = 0.3;
+// Pentatonic-like calm scale: G3, A3, B3, C4, D4, E4, G4.
 const CALM_SCALE = [196, 220, 246.94, 261.63, 293.66, 329.63, 392];
 
 function normalizeHexColor(color: string): string {
@@ -36,7 +40,7 @@ function colorToScaleIndex(color: string): number {
   const green = Number.parseInt(hex.slice(2, 4), 16);
   const blue = Number.parseInt(hex.slice(4, 6), 16);
 
-  const weighted = red * 0.2 + green * 0.5 + blue * 0.3;
+  const weighted = red * RED_WEIGHT + green * GREEN_WEIGHT + blue * BLUE_WEIGHT;
   return Math.round((weighted / 255) * (CALM_SCALE.length - 1));
 }
 

@@ -4,6 +4,9 @@ import SoundPlayer from 'react-native-sound-player';
 import {ToneEvent, WaveformType} from '../types/svgAudio';
 
 const SAMPLE_RATE = 22050;
+const ENVELOPE_ATTACK_RATIO = 0.08;
+const ENVELOPE_RELEASE_RATIO = 0.15;
+const TONE_GAP_SECONDS = 0.08;
 
 function waveformSample(type: WaveformType, phase: number): number {
   switch (type) {
@@ -28,8 +31,8 @@ function toneToPcm(tone: ToneEvent, sampleRate: number): Int16Array {
     const phase = (t * tone.frequency) % 1;
     const wave = waveformSample(tone.waveform, phase);
 
-    const attack = Math.min(i / (sampleCount * 0.08), 1);
-    const release = Math.min((sampleCount - i) / (sampleCount * 0.15), 1);
+    const attack = Math.min(i / (sampleCount * ENVELOPE_ATTACK_RATIO), 1);
+    const release = Math.min((sampleCount - i) / (sampleCount * ENVELOPE_RELEASE_RATIO), 1);
     const envelope = Math.max(0, Math.min(attack, release));
 
     pcm[i] = Math.max(
@@ -43,7 +46,7 @@ function toneToPcm(tone: ToneEvent, sampleRate: number): Int16Array {
 
 function buildWav(events: ToneEvent[]): Uint8Array {
   const pcmChunks = events.map(event => toneToPcm(event, SAMPLE_RATE));
-  const silence = new Int16Array(Math.floor(SAMPLE_RATE * 0.08));
+  const silence = new Int16Array(Math.floor(SAMPLE_RATE * TONE_GAP_SECONDS));
   const totalSamples = pcmChunks.reduce((sum, chunk) => sum + chunk.length, 0) + silence.length * pcmChunks.length;
 
   const dataSize = totalSamples * 2;

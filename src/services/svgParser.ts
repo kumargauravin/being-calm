@@ -11,6 +11,7 @@ const SHAPE_TAGS: SvgShape[] = [
   'polyline',
   'path',
 ];
+const DEFAULT_SVG_COLOR = '#8fb8ff';
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -82,7 +83,7 @@ function buildElement(shape: SvgShape, attributes: Record<string, unknown>): Par
   const color =
     (typeof attributes.fill === 'string' && attributes.fill !== 'none' ? attributes.fill : undefined) ??
     (typeof attributes.stroke === 'string' && attributes.stroke !== 'none' ? attributes.stroke : undefined) ??
-    '#8fb8ff';
+    DEFAULT_SVG_COLOR;
 
   return {
     shape,
