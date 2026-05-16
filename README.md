@@ -1,43 +1,68 @@
-# being-calm
+# Being Calm (React Native Android-first boilerplate)
 
-Offline-first React Native calming app for ADHD children using SVG-to-audio mapping.
+Offline-first React Native boilerplate that maps SVG attributes to calming audio for children.
 
-## Current implementation
+![UI preview](assets/ui-preview.png)
 
-- SVG attribute parser (`src/services/svgParser.ts`) extracts colors/shapes/sizes.
-- Mapping engine (`src/services/audioMapping.ts`) converts SVG attributes to tone profile metadata.
-- Preloaded emotion sets (2 each): crying, sad, frustrated, anger, shouting, cheated.
-- Preloaded emoji-like SVG library: smile, heart, star.
-- Offline bundled assets under:
-  - `assets/SVGs/`
-  - `assets/Audio/`
-- App screens:
-  - **Sessions**: emotion selection + visual preview + tone playback
-  - **Guide**: how to map content and offline arrangement
-  - **Manage**: local custom mapping registration
+## What is included
 
-## Quick start
+- **Pure React Native CLI setup** (no Expo)
+- **Android-capable native project** in `android/`
+- **Offline SVG parsing** with `fast-xml-parser`
+- **Offline audio generation** (WAV synthesis in JS + playback via `react-native-sound-player`)
+- **Local SVG loading** from device files using `@react-native-documents/picker`
+- **Predefined calming SVG assets** in `assets/calming-svgs/`
+- **Child-friendly UI** in `App.tsx` with:
+  - preset calming visuals
+  - local SVG import
+  - intensity/pace controls
+  - audio preview/stop controls
+
+## Project structure
+
+- `App.tsx` – main child-friendly UI flow
+- `assets/calming-svgs/` – bundled calming SVG files
+- `src/services/svgParser.ts` – extracts shapes/colors/positions from SVG
+- `src/services/audioMapper.ts` – maps SVG features into tone events
+- `src/services/audioSynthesis.ts` – generates offline WAV and plays it
+- `src/data/predefinedCalmingSvgs.ts` – preset metadata + SVG content
+
+## Setup
+
+> React Native `0.85.3` requires Node `>=22.11.0`.
 
 ```bash
 npm install
+```
+
+## Run on Android
+
+```bash
+npm run android
+```
+
+## Useful scripts
+
+```bash
+npm run start
+npm run lint
 npm test
 ```
 
-## Adding new content
+## GitHub Release APK flow
 
-1. Place SVG in `assets/SVGs/` and MP3 in `assets/Audio/`.
-2. Add the set in `src/content/emotionSets.ts` with `svgPath`, `audioPath`, and `svgMarkup`.
-3. Register the audio file in `src/services/audioPlayer.ts` require map for offline loading.
-4. (Optional) Add mapping tests in `__tests__/`.
+- Push a version tag like `v1.0.0`.
+- GitHub Actions builds `android/app/build/outputs/apk/release/app-release.apk`.
+- The APK is uploaded to that tag's GitHub Release assets.
 
-## iOS expansion readiness
+## Notes for offline/private usage
 
-- Keep native dependencies behind service abstractions (`src/services/audioPlayer.ts`).
-- Continue responsive layouts for larger iPad screens.
-- Add iOS runner/project and test audio permissions during expansion.
+- No SaaS services are required.
+- The app logic works without internet access once installed.
+- Audio is generated locally from SVG-derived tone events.
 
-## Tests
+## Next steps (optional)
 
-- `__tests__/svgParser.test.ts` validates SVG parsing.
-- `__tests__/audioMapping.test.ts` validates tone mapping.
-- `__tests__/App.test.tsx` validates UI tab interaction.
+- Add more preset SVGs to `assets/calming-svgs/`
+- Tune color/shape-to-tone mapping in `src/services/audioMapper.ts`
+- Expand calming profiles (night mode, breathing cadence, etc.)
