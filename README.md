@@ -49,6 +49,12 @@ npm run lint
 npm test
 ```
 
+## GitHub Release APK flow
+
+- Push a version tag like `v1.0.0`.
+- GitHub Actions builds `android/app/build/outputs/apk/release/app-release.apk`.
+- The APK is uploaded to that tag's GitHub Release assets.
+
 ## Notes for offline/private usage
 
 - No SaaS services are required.
